@@ -1,5 +1,4 @@
 import com.luxoft.bankapp.model.*;
-import com.luxoft.bankapp.service.BankReportServiceImpl;
 import com.luxoft.bankapp.service.Banking;
 import com.luxoft.bankapp.service.BankingImpl;
 import com.luxoft.bankapp.service.storage.ClientRepository;
@@ -15,11 +14,9 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.lang.annotation.Annotation;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringJUnitConfig(locations = {"classpath:test-clients.xml"})
+@SpringJUnitConfig(BankApplication.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class BankApplicationTask3Tests {
