@@ -13,6 +13,7 @@ import com.luxoft.bankapp.service.demo.DemoBankInitializationService;
 import com.luxoft.bankapp.service.storage.ClientRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 import java.lang.annotation.Annotation;
@@ -103,6 +104,28 @@ public class BankApplicationTests1 {
         assertEquals(value, "dev", "Profile annotation should contain value: dev");
     }
 
+    @Test
+    public void initializationServiceBeanAnnotation2() {
+        try {
+            DemoBankInitializationService.class.getDeclaredField("context");
+        } catch (NoSuchFieldException e) {
+            fail("DemoBankInitializationService should contains context field");
+        }
+    }
+
+    @Test
+    public void initializationServiceBeanAnnotation3() {
+        Annotation annotation = null;
+
+        try {
+            annotation = DemoBankInitializationService.class.getDeclaredField("context")
+                    .getAnnotation(Autowired.class);
+        } catch (NoSuchFieldException e) {
+            fail("DemoBankInitializationService should contains context field");
+        }
+
+        assertNotNull(annotation, "context field should contain annotation  @Autowired");
+    }
 
     @Test
     public void initializationClient1() {
