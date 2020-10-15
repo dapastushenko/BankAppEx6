@@ -1,3 +1,5 @@
+package com.luxoft.bankapp;
+
 import com.luxoft.bankapp.model.AbstractAccount;
 import com.luxoft.bankapp.model.CheckingAccount;
 import com.luxoft.bankapp.model.Client;
@@ -6,56 +8,58 @@ import com.luxoft.bankapp.service.BankReportService;
 import com.luxoft.bankapp.service.BankReportServiceImpl;
 import com.luxoft.bankapp.service.Banking;
 import com.luxoft.bankapp.service.BankingImpl;
+import com.luxoft.bankapp.service.demo.BankInitializationService;
+import com.luxoft.bankapp.service.demo.DemoBankInitializationService;
 import com.luxoft.bankapp.service.storage.ClientRepository;
-import com.luxoft.bankapp.service.storage.MapClientRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Profile;
 import java.lang.annotation.Annotation;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringJUnitConfig(BankApplication.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class BankApplicationTask2Tests {
+@SpringBootTest(classes = BankApplication.class)
+public class BankApplicationTests1 {
     private static final String[] CLIENT_NAMES =
             {"Jonny Bravo", "Adam Budzinski", "Anna Smith"};
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @Autowired
     private Banking banking;
 
     @Autowired
-    private ClientRepository repository;
+    private ClientRepository clientRepository;
 
     @Autowired
     private BankReportService bankReport;
 
-    @BeforeEach
-    public void init() {
-
-        BankApplication.initialize(applicationContext);
-    }
+    @Autowired
+    private BankInitializationService initializationService;
 
     @Test
-    public void repositoryBeanConfiguration() {
-        assertNotNull(repository, "repository bean should be configured");
-        assertTrue((repository instanceof MapClientRepository),
-                "repository should be instantiated with MapClientRepository class");
+    public void clientRepositoryBeanConfiguration() {
+        assertNotNull(clientRepository, "clientRepository bean should be configured");
+        assertTrue((clientRepository instanceof ClientRepository), "clientRepository should be instantiated with ClientRepository class");
     }
 
     @Test
     public void bankingBeanConfiguration() {
         assertNotNull(banking, "banking bean should be configured");
-        assertTrue((banking instanceof BankingImpl), "banking should be instantiated with BankingImpl class");
+        assertTrue((banking instanceof BankingImpl), "storage should be instantiated with BankingImpl class");
+    }
+
+    @Test
+    public void bankingBeanAnnotation() {
+        Annotation annotation = null;
+
+        try {
+            annotation = BankingImpl.class.getDeclaredField("repository")
+                    .getAnnotation(Autowired.class);
+        } catch (NoSuchFieldException e) {
+            fail("BankingImpl should contains repository field");
+        }
+
+        assertNotNull(annotation, "repository field should contain annotation @Autowired");
     }
 
     @Test
@@ -79,6 +83,28 @@ public class BankApplicationTask2Tests {
     }
 
     @Test
+    public void initializationServiceConfiguration() {
+        assertNotNull(initializationService, "initializationService bean should be configured");
+        assertTrue((initializationService instanceof DemoBankInitializationService),
+                "initializationService should be instantiated with DemoBankInitializationService class");
+    }
+
+    @Test
+    public void initializationServiceBeanAnnotation1() {
+        String value = null;
+
+        try {
+            Annotation annotation = DemoBankInitializationService.class.getAnnotation(Profile.class);
+            value = ((Profile) annotation).value()[0];
+        } catch (RuntimeException e) {
+            fail("DemoBankInitializationService should contain Profile annotation");
+        }
+
+        assertEquals(value, "dev", "Profile annotation should contain value: dev");
+    }
+
+
+    @Test
     public void initializationClient1() {
         Client client = banking.getClient(CLIENT_NAMES[0]);
         assertNotNull(client, "banking should have client with name: " + CLIENT_NAMES[0]);
@@ -93,8 +119,7 @@ public class BankApplicationTask2Tests {
         AbstractAccount account = client.getAccount(SavingAccount.class);
 
         assertNotNull(account,
-                client.getName() + "should have "
-                        + SavingAccount.class.getSimpleName() + " account");
+                client.getName() + "should have saving account");
 
         assertEquals(1000, account.getBalance());
     }
@@ -106,10 +131,9 @@ public class BankApplicationTask2Tests {
         CheckingAccount account = (CheckingAccount) client.getAccount(CheckingAccount.class);
 
         assertNotNull(account,
-                client.getName() + "should have "
-                        + CheckingAccount.class.getSimpleName() + " account");
+                client.getName() + "should have checking account");
 
-        assertEquals(0, account.getBalance());
+        assertEquals(4000, account.getBalance());
         assertEquals(1000, account.getOverdraft());
     }
 
@@ -128,43 +152,9 @@ public class BankApplicationTask2Tests {
         CheckingAccount account = (CheckingAccount) client.getAccount(CheckingAccount.class);
 
         assertNotNull(account,
-                client.getName() + "should have "
-                        + CheckingAccount.class.getSimpleName() + " account");
+                client.getName() + "should have checking account");
 
-        assertEquals(0, account.getBalance());
+        assertEquals(-500, account.getBalance());
         assertEquals(1500, account.getOverdraft());
     }
-
-    @Test
-    public void getNumberOfBankClients() {
-
-        assertEquals(2, bankReport.getNumberOfBankClients());
-
-        BankApplication.workWithExistingClients(applicationContext);
-        BankApplication.bankingServiceDemo(applicationContext);
-
-        assertEquals(3, bankReport.getNumberOfBankClients());
-    }
-
-    @Test
-    public void getAccountsNumber() {
-        assertEquals(3, bankReport.getAccountsNumber());
-
-        BankApplication.workWithExistingClients(applicationContext);
-        BankApplication.bankingServiceDemo(applicationContext);
-
-        assertEquals(5, bankReport.getAccountsNumber());
-    }
-
-    @Test
-    public void getBankCreditSum() {
-        assertEquals(0, bankReport.getBankCreditSum());
-
-        BankApplication.workWithExistingClients(applicationContext);
-        BankApplication.bankingServiceDemo(applicationContext);
-
-        assertEquals(-500, bankReport.getBankCreditSum());
-
-    }
-
 }
