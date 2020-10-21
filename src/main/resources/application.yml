@@ -1,5 +1,9 @@
 spring.profiles.active: dev
 
+audit.amount:
+  deposit: 99
+  withdrawal: 99
+
 ---
 
 spring:
