@@ -1,15 +1,12 @@
 package com.luxoft.bankapp.model;
 
-import java.util.Objects;
+import java.io.Serializable;
 
-public abstract class AbstractAccount {
+public abstract class AbstractAccount implements Serializable {
 
     private long id;
 
     private double balance;
-
-    public AbstractAccount() {
-    }
 
     public void deposit(double amount) {
         if (amount < 0) {
@@ -23,27 +20,26 @@ public abstract class AbstractAccount {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AbstractAccount that = (AbstractAccount) o;
-        return id == that.id &&
-                Double.compare(that.balance, balance) == 0;
-    }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, balance);
+        AbstractAccount that = (AbstractAccount) o;
+
+        return Double.compare(that.balance, balance) == 0;
+
     }
 
     @Override
     public String toString() {
-
         StringBuilder builder = new StringBuilder();
         builder
                 .append("\n")
                 .append("\n\tbalance = ")
                 .append(balance);
-
         return builder.toString();
     }
 

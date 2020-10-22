@@ -1,6 +1,6 @@
 package com.luxoft.bankapp.exceptions;
 
-public class NotEnoughFundsException extends BankException {
+public class NotEnoughFundsException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
@@ -12,7 +12,7 @@ public class NotEnoughFundsException extends BankException {
 
     @Override
     public String getMessage() {
-        return "Not Enough Funds " + amount;
+        return "Not Enough Funds. Your balance is " + amount;
     }
 
 }

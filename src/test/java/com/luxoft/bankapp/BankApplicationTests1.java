@@ -4,22 +4,23 @@ import com.luxoft.bankapp.model.AbstractAccount;
 import com.luxoft.bankapp.model.CheckingAccount;
 import com.luxoft.bankapp.model.Client;
 import com.luxoft.bankapp.model.SavingAccount;
-import com.luxoft.bankapp.service.BankReportService;
-import com.luxoft.bankapp.service.BankReportServiceImpl;
 import com.luxoft.bankapp.service.Banking;
 import com.luxoft.bankapp.service.BankingImpl;
-import com.luxoft.bankapp.service.demo.BankInitializationService;
-import com.luxoft.bankapp.service.demo.DemoBankInitializationService;
 import com.luxoft.bankapp.service.storage.ClientRepository;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
+import org.springframework.test.annotation.DirtiesContext;
+
 import java.lang.annotation.Annotation;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = BankApplication.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BankApplicationTests1 {
     private static final String[] CLIENT_NAMES =
             {"Jonny Bravo", "Adam Budzinski", "Anna Smith"};
@@ -30,16 +31,17 @@ public class BankApplicationTests1 {
     @Autowired
     private ClientRepository clientRepository;
 
-    @Autowired
-    private BankReportService bankReport;
-
-    @Autowired
-    private BankInitializationService initializationService;
+    @AfterAll
+    public void clean() {
+        for (Client c : banking.getClients()) {
+            banking.deleteClient(c);
+        }
+    }
 
     @Test
-    public void clientRepositoryBeanConfiguration() {
-        assertNotNull(clientRepository, "clientRepository bean should be configured");
-        assertTrue((clientRepository instanceof ClientRepository), "clientRepository should be instantiated with ClientRepository class");
+    public void storageBeanConfiguration() {
+        assertNotNull(clientRepository, "storage bean should be configured");
+        assertTrue((clientRepository instanceof ClientRepository), "storage should be instantiated with ClientCrudStorage class");
     }
 
     @Test
@@ -49,81 +51,31 @@ public class BankApplicationTests1 {
     }
 
     @Test
-    public void bankingBeanAnnotation() {
+    public void bankingBeanAnnotation1() {
         Annotation annotation = null;
 
         try {
-            annotation = BankingImpl.class.getDeclaredField("repository")
+            annotation = BankingImpl.class.getDeclaredField("clientRepository")
                     .getAnnotation(Autowired.class);
         } catch (NoSuchFieldException e) {
-            fail("BankingImpl should contains repository field");
+            fail("BankingImpl should contains clientRepository field");
         }
 
-        assertNotNull(annotation, "repository field should contain annotation @Autowired");
+        assertNotNull(annotation, "clientRepository field should contain annotation @Autowired");
     }
 
     @Test
-    public void bankReportConfiguration() {
-        assertNotNull(bankReport, "bankReport bean should be configured");
-        assertTrue((bankReport instanceof BankReportServiceImpl), "bankReport should be instantiated with BankReportServiceImpl class");
-    }
-
-    @Test
-    public void bankReportBeanAnnotation() {
+    public void bankingBeanAnnotation2() {
         Annotation annotation = null;
 
         try {
-            annotation = BankReportServiceImpl.class.getDeclaredField("repository")
+            annotation = BankingImpl.class.getDeclaredField("accountRepository")
                     .getAnnotation(Autowired.class);
         } catch (NoSuchFieldException e) {
-            fail("BankingImpl should contains repository field");
+            fail("BankingImpl should contains accountRepository field");
         }
 
-        assertNotNull(annotation, "repository field should contain annotation @Autowired");
-    }
-
-    @Test
-    public void initializationServiceConfiguration() {
-        assertNotNull(initializationService, "initializationService bean should be configured");
-        assertTrue((initializationService instanceof DemoBankInitializationService),
-                "initializationService should be instantiated with DemoBankInitializationService class");
-    }
-
-    @Test
-    public void initializationServiceBeanAnnotation1() {
-        String value = null;
-
-        try {
-            Annotation annotation = DemoBankInitializationService.class.getAnnotation(Profile.class);
-            value = ((Profile) annotation).value()[0];
-        } catch (RuntimeException e) {
-            fail("DemoBankInitializationService should contain Profile annotation");
-        }
-
-        assertEquals(value, "dev", "Profile annotation should contain value: dev");
-    }
-
-    @Test
-    public void initializationServiceBeanAnnotation2() {
-        try {
-            DemoBankInitializationService.class.getDeclaredField("context");
-        } catch (NoSuchFieldException e) {
-            fail("DemoBankInitializationService should contains context field");
-        }
-    }
-
-    @Test
-    public void initializationServiceBeanAnnotation3() {
-        Annotation annotation = null;
-
-        try {
-            annotation = DemoBankInitializationService.class.getDeclaredField("context")
-                    .getAnnotation(Autowired.class);
-        } catch (NoSuchFieldException e) {
-            fail("DemoBankInitializationService should contains context field");
-        }
-
-        assertNotNull(annotation, "context field should contain annotation  @Autowired");
+        assertNotNull(annotation, "accountRepository field should contain annotation @Autowired");
     }
 
     @Test
