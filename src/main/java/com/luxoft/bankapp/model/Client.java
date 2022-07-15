@@ -1,7 +1,10 @@
 package com.luxoft.bankapp.model;
 
+import com.luxoft.bankapp.BankApplication;
 import com.luxoft.bankapp.exceptions.AccountNumberLimitException;
+import com.luxoft.bankapp.service.operations.BankingOperationsService;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,17 +12,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+
+@Entity
+@Table(name = "CLIENT")
 public class Client implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "NAME")
     private String name;
 
+    @OneToMany(targetEntity = AbstractAccount.class, fetch = FetchType.EAGER)
     private List<AbstractAccount> accounts = new ArrayList<>(2);
 
+    @OneToOne
     private AbstractAccount activeAccount;
 
+    @Column(name = "GENDER")
     private Gender gender;
 
+    @Column(name = "CITY")
     private String city;
 
     public Client() {
@@ -36,14 +49,20 @@ public class Client implements Serializable {
 
     public double getBalance() {
 
-        return 0.0;
+        return getActiveAccount() != null ?
+                getActiveAccount().getBalance() : 0.0;
+
     }
 
     public void deposit(double amount) {
+        activeAccount = getBankingOperationsService()
+                .deposit(getActiveAccount(), amount);
 
     }
 
     public void withdraw(double amount) {
+        activeAccount = getBankingOperationsService()
+                .withdraw(getActiveAccount(), amount);
     }
 
     public void removeAccount(Class type) {
@@ -112,6 +131,14 @@ public class Client implements Serializable {
 
         return builder;
     }
+    private BankingOperationsService getBankingOperationsService() {
+        return BankApplication.contextProvider()
+                .getApplicationContext()
+                .getBean(BankingOperationsService.class);
+    }
+
+
+
 
     @Override
     public String toString() {

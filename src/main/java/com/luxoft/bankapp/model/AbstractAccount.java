@@ -1,7 +1,16 @@
 package com.luxoft.bankapp.model;
 
+
+
+import javax.persistence.*;
 import java.io.Serializable;
 
+
+
+import java.io.Serializable;
+
+@Entity
+@Table(name = "ACCOUNT")
 public abstract class AbstractAccount implements Serializable {
 
     private long id;
@@ -43,6 +52,7 @@ public abstract class AbstractAccount implements Serializable {
         return builder.toString();
     }
 
+    @Column(name = "BALANCE")
     public double getBalance() {
         return balance;
     }
@@ -51,6 +61,8 @@ public abstract class AbstractAccount implements Serializable {
         this.balance = balance;
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId() {
         return id;
     }
